@@ -143,7 +143,6 @@ Adafruit_SSD1331 display = Adafruit_SSD1331(Cs, Dc, Mosi, Sclk, Rst);
 int x = 0;
 int y = 0;
 
-
 //////////////////////////////////////////////////////
 
 void setup()
