@@ -31,9 +31,9 @@
 #define blackLinePinAnalogTL A13   //Top Left
 #define blackLinePinTL 43         //Top Left
 #define blackLinePinAnalogFR A14  //Far Right (near the wheel)
-#define blackLinePinFR 44         //Far Right (near the wheel)
+#define blackLinePinFR 20         //Far Right (near the wheel)
 #define blackLinePinAnalogFL A15  //Far Left (near the wheel)
-#define blackLinePinFL 45         //Far Left (near the wheel)
+#define blackLinePinFL 21         //Far Left (near the wheel)
 
 bool blackLineTR = 0; //top right
 bool blackLineTL = 0; // top left
@@ -233,9 +233,6 @@ void setup()
   display.setCursor(0, 25);
   display.print("Ready to measure");
 
-  attachInterrupt(digitalPinToInterrupt(), blink, CHANGE);
-
-  
   delay(3000);
 }
 
@@ -275,6 +272,7 @@ void informationdisplay(void) {
   display.setTextColor(BLACK);
   display.setCursor(2, 0);
   display.println("Coordinates: ");
+  display.setCursor(3, 4);
   display.print("(");
   display.print(x);
   display.print(", ");
@@ -291,7 +289,8 @@ void driveCar(){
   
   
   while (true){
-    int cd=0;
+    int cd=0;  //flag to change direction 
+    //pins returns 1 when they detect a black line
     int tr=digitalRead(blackLinePinTR);
     int tl=digitalRead(blackLinePinTL);
     int fr=digitalRead(blackLinePinFR);
@@ -300,7 +299,6 @@ void driveCar(){
     Serial.print(tr);
     Serial.print(" ");
     Serial.println(tl);
-
     if ((fl==1) or (fr==1)){
        intRaised=1;
        stopCar();
