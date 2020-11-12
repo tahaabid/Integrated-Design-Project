@@ -275,6 +275,7 @@ void informationdisplay(void) {
   display.setTextColor(BLACK);
   display.setCursor(2, 0);
   display.println("Coordinates: ");
+  display.setCursor(3, 4);
   display.print("(");
   display.print(x);
   display.print(", ");
@@ -291,7 +292,8 @@ void driveCar(){
   
   
   while (true){
-    int cd=0;
+    int cd=0;  //flag to change direction 
+    //pins returns 1 when they detect a black line
     int tr=digitalRead(blackLinePinTR);
     int tl=digitalRead(blackLinePinTL);
     int fr=digitalRead(blackLinePinFR);
@@ -300,7 +302,6 @@ void driveCar(){
     Serial.print(tr);
     Serial.print(" ");
     Serial.println(tl);
-
     if ((fl==1) or (fr==1)){
        intRaised=1;
        stopCar();
