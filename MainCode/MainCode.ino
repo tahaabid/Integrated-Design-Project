@@ -1,3 +1,4 @@
+//Main by Saad and Taha
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_SSD1331.h>
@@ -143,6 +144,15 @@ Adafruit_SSD1331 display = Adafruit_SSD1331(Cs, Dc, Mosi, Sclk, Rst);
 int x = 0;
 int y = 0;
 
+
+long int timer=millis();
+
+int tr;
+int tl;
+int fr;
+int fl;
+int intRaised=0;
+int cd=0;
 //////////////////////////////////////////////////////
 
 void setup()
@@ -194,7 +204,7 @@ void setup()
   pinMode(pin1R, OUTPUT);
   pinMode(pin2R, OUTPUT);
   /////////////////////////////////////////
-  int intRaised=0;
+  
   /////////////////////////////////////////
   
   //Encoder
@@ -233,7 +243,12 @@ void setup()
   display.setCursor(0, 25);
   display.print("Ready to measure");
 
-  delay(3000);
+  attachInterrupt(digitalPinToInterrupt(blackLinePinFR), crossSection, RISING);
+  attachInterrupt(digitalPinToInterrupt(blackLinePinFL), crossSection, RISING);
+  
+  
+  delay(1000);
+  informationdisplay();
 }
 
 void loop()
@@ -266,13 +281,45 @@ void loop()
   
 }
 
+void crossSection(){
+  //if ((fl==1) or (fr==1)){
+      if (millis() - timer > 400) {
+       Serial.println("interrupt entered");
+       timer=millis();
+       intRaised=1;
+       //stopCar();
+       if (cd==0){
+          x=x+1;
+          Serial.print("x= ");
+          Serial.println(x);
+          informationdisplay();
+          //ColorInput();
+          //ColorCheck();
+       }
+       if (cd==1){
+          y=y+1;
+          Serial.print("y= ");
+          Serial.println(y);
+          informationdisplay();
+          //ColorInput();
+          //ColorCheck();
+       }
+       //delay(1000);
+       intRaised=0;
+       //digitalWrite(pin1R, 0);
+       //digitalWrite(pin2R, 1);
+       //digitalWrite(pin1L, 0);
+       //digitalWrite(pin2L, 1);
+    }
+  //}
+}
+
 void informationdisplay(void) {
   display.fillScreen(WHITE);
   display.setTextSize(1);
   display.setTextColor(BLACK);
   display.setCursor(2, 0);
   display.println("Coordinates: ");
-  display.setCursor(3, 4);
   display.print("(");
   display.print(x);
   display.print(", ");
@@ -287,42 +334,27 @@ void driveCar(){
   digitalWrite(pin2L, 1);
   Serial.print("Starting...");
   
-  
+  int flag=0;
   while (true){
-    int cd=0;  //flag to change direction 
-    //pins returns 1 when they detect a black line
-    int tr=digitalRead(blackLinePinTR);
-    int tl=digitalRead(blackLinePinTL);
-    int fr=digitalRead(blackLinePinFR);
-    int fl=digitalRead(blackLinePinFL);
-    Serial.print("tr and tl: ");
-    Serial.print(tr);
-    Serial.print(" ");
-    Serial.println(tl);
-    if ((fl==1) or (fr==1)){
-       intRaised=1;
-       stopCar();
-       if (cd==0){
-        x=x+1;
-        Serial.print("x= ");
-        Serial.println(x);
-        informationdisplay();
-        ColorInput();
-        ColorCheck();
-       }
-       if (cd==1){
-        y=y+1;
-        Serial.print("y= ");
-        Serial.println(y);
-        informationdisplay();
-        stopCar();
-        ColorInput();
-        ColorCheck();
-       }
-       intRaised=0;
-    }
+    tr=digitalRead(blackLinePinTR);
+    tl=digitalRead(blackLinePinTL);
+    fr=digitalRead(blackLinePinFR);
+    fl=digitalRead(blackLinePinFL);
+    //Serial.print("tr and tl: ");
+    //Serial.print(tr);
+    //Serial.print(" ");
+    //Serial.println(tl);
+
+    
 
     if (intRaised==0){
+      if (flag==0){
+        digitalWrite(pin1R, 0);
+        digitalWrite(pin2R, 1);
+        digitalWrite(pin1L, 0);
+        digitalWrite(pin2L, 1);
+        flag=1; 
+      }
       if ((tl==1) and (tr==0)){
         digitalWrite(pin1R, 0);
         digitalWrite(pin2R, 0);
@@ -359,6 +391,10 @@ void driveCar(){
         digitalWrite(pin2L, 1);
         Serial.println("forward");
       }
+    }
+    else{
+      //stopCar();
+      flag=0; 
     }
   }
 }
