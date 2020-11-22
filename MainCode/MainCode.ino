@@ -267,7 +267,8 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(blackLinePinFL), crossSection, RISING);
   
   
-  delay(3000);
+  delay(1000);
+  informationdisplay();
 }
 
 
@@ -283,67 +284,6 @@ void setup()
 
 void loop()
 {
-<<<<<<< Updated upstream
-  //ForwardDriveCar();
-  driveCar();
-  /***Serial.println("F");
-  ForwardDriveCar();
-  Serial.println("L");
-  LeftRotateCar();
-  Serial.println("R");
-  RightRotateCar();*/
-
-  /*
-  stopCar();
-  ForwardDriveCar();
-  delay(1500);
-  stopCar();
-  RightRotateCar();
-  ForwardDriveCar();
-  delay(1500);
-  stopCar();
-  LeftRotateCar(); */  
-
-  Serial.print(" encoderValueL= ");
-  Serial.print(encoderValueL);
-  Serial.print(" encoderValueR= ");
-  Serial.print(encoderValueR);
-  Serial.println("");
-  
-}
-
-void crossSection(){
-  //if ((fl==1) or (fr==1)){
-      if (millis() - timer > 1000) {
-       Serial.println("interrupt entered");
-       timer=millis();
-       intRaised=1;
-       stopCar();
-       if (cd==0){
-          x=x+1;
-          Serial.print("x= ");
-          Serial.println(x);
-          informationdisplay();
-          ColorInput();
-          ColorCheck();
-       }
-       if (cd==1){
-          y=y+1;
-          Serial.print("y= ");
-          Serial.println(y);
-          informationdisplay();
-          stopCar();
-          ColorInput();
-          ColorCheck();
-       }
-       //delay(1000);
-       intRaised=0;
-       //digitalWrite(pin1R, 0);
-       //digitalWrite(pin2R, 1);
-       //digitalWrite(pin1L, 0);
-       //digitalWrite(pin2L, 1);
-    }
-=======
   Serial.print("Main Loop Running...");
   InputCapture();
   //turn90R();
@@ -352,7 +292,6 @@ void crossSection(){
   coordinateControl();
   //for (int x=0; x<4; x++){
     //ColorInput();
->>>>>>> Stashed changes
   //}
   //ColorCheck();
 }
@@ -406,11 +345,6 @@ void informationdisplay(void) {
       stopTurnCarOnsiteL();
       Serial.println("turning left");
     }
-<<<<<<< Updated upstream
-    else{
-      stopCar();
-      flag=0; 
-=======
     if ((blackLineTL==0) and (blackLineTR==1)){
       stopCar();
       turnCarOnsiteR();
@@ -436,7 +370,6 @@ void informationdisplay(void) {
       }
       //backwardCar();
       Serial.println("going back");
->>>>>>> Stashed changes
     }
   }
   else{
@@ -491,18 +424,17 @@ void coordinateControl() {
   }
   else{
     if (blackLineTL==0 and blackLineTR==1){
-      turn90R(1);
-    }
-    else if (blackLineTL==1 and blackLineTR==0){
       turn90L(1);
     }
-    else if (blackLineTL==1 and blackLineTR==1){
+    else if (blackLineTL==1 and blackLineTR==0){
+      turn90R(1);
+    }
+    else if (blackLineTL==0 and blackLineTR==0){
       move_car_forward(2);
     }
-    //else if (blackLineTL==0 and blackLineTR==0){
-    //  stopCar();
-    //  backwardCar();
-    //}
+    else if (blackLineTL==1 and blackLineTR==0){
+      move_car_forward(2);
+    }
   }
 }
 //////////////////////////////////////////////////////
