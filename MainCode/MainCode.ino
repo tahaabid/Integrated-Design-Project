@@ -604,6 +604,9 @@ int colorValueC = 0;
 int colorValueR = 0;
 int colorValueG = 0;
 int colorValueB = 0;
+double CRratio = 0;
+double CGratio = 0;
+double CBratio = 0;
 int colorCnt = 0; //each loop only detect one color value
 int colorCheckCntR = 0; //check several times before detection
 int colorCheckCntG = 0;
@@ -660,11 +663,24 @@ void ColorInput() {
   Serial.print(" ");
 }
 void ColorCheck() {
+<<<<<<< Updated upstream
   //Check Red Color
   if ((50 <= colorValueC && colorValueC <= 170) &&
       (110 <= colorValueR && colorValueR <= 260) &&
       (250 <= colorValueB && colorValueB <= 420) &&
       (300 <= colorValueG && colorValueG <= 500)) {
+=======
+  Serial.println("Checking color");
+  CRratio = colorValueR / colorValueC;
+  CBratio = colorValueB / colorValueC;
+  CGratio = colorValueG / colorValueC;
+  
+  //Check Red Color
+  if ((101 < colorValueC && colorValueC < 1207) &&
+      (1.30 < CRratio && CRratio < 11.84) &&
+      (0.44 < CBratio && CBratio < 15.5) &&
+      (0.32 < CGratio && CGratio < 5.99)) {
+>>>>>>> Stashed changes
     colorCheckCntR++;
   } else {
     colorCheckCntR = 0;
@@ -681,10 +697,17 @@ void ColorCheck() {
     delay(5000);
   }
   //Check Green Color
+<<<<<<< Updated upstream
   if ((50 <= colorValueC && colorValueC <= 150) &&
       (110 <= colorValueR && colorValueR <= 320) &&
       (140 <= colorValueB && colorValueB <= 360) &&
       (140 <= colorValueG && colorValueG <= 320)) {
+=======
+  if ((58 < colorValueC && colorValueC < 1207) &&
+      (2.05 < CRratio && CRratio < 12.38) &&
+      (0.45 < CBratio && CBratio < 16.45) &&
+      (0.32 < CGratio && CGratio < 4.20)) {
+>>>>>>> Stashed changes
     colorCheckCntG++;
   } else {
     colorCheckCntG = 0;
