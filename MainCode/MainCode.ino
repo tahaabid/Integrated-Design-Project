@@ -172,9 +172,6 @@ int rightStart = 0;
 int leftStart = 0;
 int targetValue = 0;
 int ColourCh = 0; //green = 1, red = 2, no colour = 0
-double CRratio = 0;
-double CGratio = 0;
-double CBratio = 0;
 int direc = 1; //East = 1, North = 2, West = 3, South = 4
 bool backOnLine=true;
 //////////////////////////////////////////////////////
@@ -302,14 +299,14 @@ void loop()
   //turn90R();
   //move_car_forward();
   //turn90R();
-  coordinateControl();
-  //MotorControl();
-  //for (int x=0; x<4; x++){
-    //for (int x=0; x<4; x++){
-      //ColorInput();
-    //}
-    //ColorCheck();
-  //}
+  //coordinateControl();
+  for (int x=0; x<1; x++){
+    for (int x=0; x<4; x++){
+      ColorInput();
+    }
+    ColorCheck();
+  }
+  MotorControl();
 }
 
 
@@ -456,6 +453,7 @@ void MotorControl() {
     }
     else if (blackLineTL==1 and blackLineTR==1){
             stopCar();
+            backOnLine=true;
             move_car_forward(5);
             //forwardCar();
     }
@@ -824,6 +822,9 @@ int colorValueC = 0;
 int colorValueR = 0;
 int colorValueG = 0;
 int colorValueB = 0;
+double CRratio = 0;
+double CGratio = 0;
+double CBratio = 0;
 int colorCnt = 0; //each loop only detect one color value
 int colorCheckCntR = 0; //check several times before detection
 int colorCheckCntG = 0;
@@ -875,42 +876,42 @@ void ColorInput() {
 }
 
 void ColorCheck() {
-  Serial.println("Checking color              ////");
-  //Check Red Color
-  if ((170 < colorValueC && colorValueC < 280) &&
-      (200 < colorValueR && colorValueR < 390) &&
-      (450 < colorValueB && colorValueB < 700) &&
-      (550 < colorValueG && colorValueG < 760)) {
+  //Serial.println("Checking color"M);
+  CRratio = (colorValueR*1.0) / colorValueC;
+  CBratio = (colorValueB*1.0) / colorValueC;
+  CGratio = (colorValueG*1.0) / colorValueC;
+    
+    //Check Red Color
+  if ((150 < colorValueC && colorValueC < 390) &&
+      (0.89 <= CRratio && CRratio <= 1.61) &&
+      (1.96 <= CBratio && CBratio <= 3.73) &&
+      (2.57 <= CGratio && CGratio <= 4.71)) {
     colorCheckCntR++;
   } else {
     colorCheckCntR = 0;
   }
+
   
   //Continous detection before notification
   if (colorCheckCntR > colorCheckCnt) {
     Serial.print(" Red is detected. ");
-    //RedCheck = 1;
-    ColourCh = 2;
+    ColourCh=2;
     colorCheckCntR = colorCheckCnt;
   }
-
-  
   //Check Green Color
-  if ((90 < colorValueC && colorValueC < 400) &&
-      (590 < colorValueR && colorValueR < 971) &&
-      (277 < colorValueB && colorValueB < 1138) &&
-      (480 < colorValueG && colorValueG < 760)) {
+  if ((100 <= colorValueC && colorValueC <= 350) &&
+      (1.36 <= CRratio && CRratio <= 2.82) &&
+      (2.57 <= CBratio && CBratio <= 3.8) &&
+      (1.84 <= CGratio && CGratio <= 4.71)) {
     colorCheckCntG++;
   } else {
     colorCheckCntG = 0;
   }
-
-  
   //Continous detection before notification
   if (colorCheckCntG > colorCheckCnt) {
     Serial.print(" Green is detected. ");
-    //GreenCheck = 1;
-    ColourCh = 1;
+    ColourCh=1;
     colorCheckCntG = colorCheckCnt;
   }
+
 }
