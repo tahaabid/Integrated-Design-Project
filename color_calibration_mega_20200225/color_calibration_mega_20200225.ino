@@ -102,16 +102,16 @@ void ColorInput() {
   
 }
 void ColorCheck() {
-  //Serial.println("Checking color");
-  CRratio = colorValueR / colorValueC;
-  CBratio = colorValueB / colorValueC;
-  CGratio = colorValueG / colorValueC;
+  //Serial.println("Checking color"M);
+  CRratio = (colorValueR*1.0) / colorValueC;
+  CBratio = (colorValueB*1.0) / colorValueC;
+  CGratio = (colorValueG*1.0) / colorValueC;
     
     //Check Red Color
-  if ((101 < colorValueC && colorValueC < 1207) &&
-      (1.30 < CRratio && CRratio < 11.84) &&
-      (0.44 < CBratio && CBratio < 15.5) &&
-      (0.32 < CGratio && CGratio < 5.99)) {
+  if (//(101 < colorValueC && colorValueC < 1207) &&
+      (0.89 <= CRratio && CRratio <= 1.61) &&
+      (1.96 <= CBratio && CBratio <= 3.73) &&
+      (2.57 <= CGratio && CGratio <= 4.71)) {
     colorCheckCntR++;
   } else {
     colorCheckCntR = 0;
@@ -120,21 +120,21 @@ void ColorCheck() {
   
   //Continous detection before notification
   if (colorCheckCntR > colorCheckCnt) {
-    //Serial.print(" Red is detected. ");
+    Serial.print(" Red is detected. ");
     colorCheckCntR = colorCheckCnt;
   }
   //Check Green Color
-  if ((58 < colorValueC && colorValueC < 1207) &&
-      (2.05 < CRratio && CRratio < 12.38) &&
-      (0.45 < CBratio && CBratio < 16.45) &&
-      (0.32 < CGratio && CGratio < 4.20)) {
+  if (//(58 < colorValueC && colorValueC < 1207) &&
+      (1.36 <= CRratio && CRratio <= 2.82) &&
+      (2.57 <= CBratio && CBratio <= 3.8) &&
+      (1.84 <= CGratio && CGratio <= 4.71)) {
     colorCheckCntG++;
   } else {
     colorCheckCntG = 0;
   }
   //Continous detection before notification
   if (colorCheckCntG > colorCheckCnt) {
-    //Serial.print(" Green is detected. ");
+    Serial.print(" Green is detected. ");
     colorCheckCntG = colorCheckCnt;
   }
   //Check Blue Color
