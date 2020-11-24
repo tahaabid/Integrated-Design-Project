@@ -31,13 +31,23 @@
 #define blackLinePinTR 42         //Top Right
 #define blackLinePinAnalogTL A13   //Top Left
 #define blackLinePinTL 43         //Top Left
+
+//#define blackLinePinAnalogTR A12   //Top Right Right
+#define blackLinePinTRR 40         //Top Right Right
+//#define blackLinePinAnalogTL A13   //Top Left Left
+#define blackLinePinTLL 41         //Top Left Left
+
 #define blackLinePinAnalogFR A14  //Far Right (near the wheel)
 #define blackLinePinFR 20         //Far Right (near the wheel)
 #define blackLinePinAnalogFL A15  //Far Left (near the wheel)
 #define blackLinePinFL 21         //Far Left (near the wheel)
 
+bool prevBlackLineTR=0;
+bool prevBlackLineTL=0;
 bool blackLineTR = 0; //top right
 bool blackLineTL = 0; // top left
+bool blackLineTRR = 0; //top right right
+bool blackLineTLL = 0; // top left left
 bool blackLineFR = 0; //far right
 bool blackLineFL = 0; //far left
 int  blackLineAnalogTR = 0; //top right
@@ -155,6 +165,27 @@ int intRaised=0;
 int cd=0;
 //////////////////////////////////////////////////////
 
+int GreenCheck = 0;
+int RedCheck = 0;
+int forwardStart = 0;
+int rightStart = 0;
+int leftStart = 0;
+int targetValue = 0;
+int ColourCh = 0; //green = 1, red = 2, no colour = 0
+double CRratio = 0;
+double CGratio = 0;
+double CBratio = 0;
+int direc = 1; //East = 1, North = 2, West = 3, South = 4
+
+//////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
 void setup()
 {
   Serial.begin(9600);
@@ -181,6 +212,8 @@ void setup()
   //Black Line sensor
   pinMode(blackLinePinTR, INPUT);
   pinMode(blackLinePinTL, INPUT);
+  pinMode(blackLinePinTRR, INPUT);
+  pinMode(blackLinePinTLL, INPUT);
   pinMode(blackLinePinFR, INPUT);
   pinMode(blackLinePinFL, INPUT);
   /////////////////////////////////////////
@@ -251,68 +284,43 @@ void setup()
   informationdisplay();
 }
 
+
+
+
+
+
+
+
+
+
+
+
 void loop()
 {
-  //ForwardDriveCar();
-  driveCar();
-  /***Serial.println("F");
-  ForwardDriveCar();
-  Serial.println("L");
-  LeftRotateCar();
-  Serial.println("R");
-  RightRotateCar();*/
-
-  /*
-  stopCar();
-  ForwardDriveCar();
-  delay(1500);
-  stopCar();
-  RightRotateCar();
-  ForwardDriveCar();
-  delay(1500);
-  stopCar();
-  LeftRotateCar(); */  
-
-  Serial.print(" encoderValueL= ");
-  Serial.print(encoderValueL);
-  Serial.print(" encoderValueR= ");
-  Serial.print(encoderValueR);
-  Serial.println("");
-  
-}
-
-void crossSection(){
-  //if ((fl==1) or (fr==1)){
-      if (millis() - timer > 400) {
-       Serial.println("interrupt entered");
-       timer=millis();
-       intRaised=1;
-       //stopCar();
-       if (cd==0){
-          x=x+1;
-          Serial.print("x= ");
-          Serial.println(x);
-          informationdisplay();
-          //ColorInput();
-          //ColorCheck();
-       }
-       if (cd==1){
-          y=y+1;
-          Serial.print("y= ");
-          Serial.println(y);
-          informationdisplay();
-          //ColorInput();
-          //ColorCheck();
-       }
-       //delay(1000);
-       intRaised=0;
-       //digitalWrite(pin1R, 0);
-       //digitalWrite(pin2R, 1);
-       //digitalWrite(pin1L, 0);
-       //digitalWrite(pin2L, 1);
+  Serial.print("Main Loop Running...");
+  InputCapture();
+  //turn90R();
+  //move_car_forward();
+  //turn90R();
+  //coordinateControl();
+  MotorControl();
+  for (int x=0; x<4; x++){
+    for (int x=0; x<4; x++){
+      ColorInput();
     }
-  //}
+    ColorCheck();
+  }
 }
+
+
+
+
+
+
+
+
+
+
 
 void informationdisplay(void) {
   display.fillScreen(WHITE);
@@ -325,87 +333,80 @@ void informationdisplay(void) {
   display.print(", ");
   display.print(y);
   display.println(")");
+  display.print("Direction: ");
+  display.println(direc);
 }
 
-void driveCar(){
-  digitalWrite(pin1R, 0);
-  digitalWrite(pin2R, 1);
-  digitalWrite(pin1L, 0);
-  digitalWrite(pin2L, 1);
+/*void driveCar(){
+  //move_car_forward();
   Serial.print("Starting...");
   
   int flag=0;
-  while (true){
-    tr=digitalRead(blackLinePinTR);
-    tl=digitalRead(blackLinePinTL);
-    fr=digitalRead(blackLinePinFR);
-    fl=digitalRead(blackLinePinFL);
-    //Serial.print("tr and tl: ");
-    //Serial.print(tr);
-    //Serial.print(" ");
-    //Serial.println(tl);
-
-    
-
-    if (intRaised==0){
-      if (flag==0){
-        digitalWrite(pin1R, 0);
-        digitalWrite(pin2R, 1);
-        digitalWrite(pin1L, 0);
-        digitalWrite(pin2L, 1);
-        flag=1; 
-      }
-      if ((tl==1) and (tr==0)){
-        digitalWrite(pin1R, 0);
-        digitalWrite(pin2R, 0);
-        digitalWrite(pin1L, 0);
-        digitalWrite(pin2L, 1);
+  //intRaised to stop main loop when cross section is executed
+  Serial.print("Running...");
+  if (intRaised==0){
+    //flag used to execute forward only once unless reset
+    if (flag==0){
+      if ((blackLineTL==1) and (blackLineTR==1)){
+        stopCar();
+        move_car_forward();
+        flag=0; 
         Serial.println("turning left");
-        while(!((tl==1) and (tr==1))){
-          tr=digitalRead(blackLinePinTR);
-          tl=digitalRead(blackLinePinTL);
-          fr=digitalRead(blackLinePinFR);
-          fl=digitalRead(blackLinePinFL);
-        };
-        digitalWrite(pin1R, 0);
-        digitalWrite(pin2R, 1);
-        digitalWrite(pin1L, 0);
-        digitalWrite(pin2L, 1);
-        Serial.println("forward");
-      }
-      if ((tl==0) and (tr==1)){
-        digitalWrite(pin1R, 0);
-        digitalWrite(pin2R, 1);
-        digitalWrite(pin1L, 0);
-        digitalWrite(pin2L, 0);
-        Serial.println("turning right");
-        while(!((tl==1) and (tr==1))){
-          tr=digitalRead(blackLinePinTR);
-          tl=digitalRead(blackLinePinTL);
-          fr=digitalRead(blackLinePinFR);
-          fl=digitalRead(blackLinePinFL);
-        };
-        digitalWrite(pin1R, 0);
-        digitalWrite(pin2R, 1);
-        digitalWrite(pin1L, 0);
-        digitalWrite(pin2L, 1);
-        Serial.println("forward");
       }
     }
-    else{
-      //stopCar();
-      flag=0; 
+    if ((blackLineTL==1) and (blackLineTR==0)){
+      stopCar();
+      turnCarOnsiteL();
+      while(!((blackLineTL==1) and (blackLineTR==1))){
+        InputCapture();  
+      }
+      stopTurnCarOnsiteL();
+      Serial.println("turning left");
+    }
+    if ((blackLineTL==0) and (blackLineTR==1)){
+      stopCar();
+      turnCarOnsiteR();
+      while(!((blackLineTL==1) and (blackLineTR==1))){ 
+        InputCapture();
+      }
+      stopTurnCarOnsiteR();
+      Serial.println("turning right");
+    }
+    if ((blackLineTL==0) and (blackLineTR==0)){
+      stopCar();
+      if ((prevBlackLineTL==0) and (prevBlackLineTR==1)){
+        forwardR(); 
+        while(!((blackLineTL==1) and (blackLineTR==1))){
+          InputCapture();
+        }
+      }
+      if ((prevBlackLineTL==1) and (prevBlackLineTR==0)){
+        forwardL();
+        while(!((blackLineTL==1) and (blackLineTR==1))){
+          InputCapture();
+        }
+      }
+      //backwardCar();
+      Serial.println("going back");
     }
   }
-}
+  else{
+    flag=0; 
+  }
+}*/
 
 
 //////////////////////////////////////////////////////
 //Input routine
 void InputCapture() {
   //black
+  prevBlackLineTR=blackLineTR;
+  prevBlackLineTL=blackLineTL;
   blackLineTR = digitalRead(blackLinePinTR);
   blackLineTL = digitalRead(blackLinePinTL);
+  blackLineTRR = digitalRead(blackLinePinTRR);
+  blackLineTLL = digitalRead(blackLinePinTLL);
+  
   blackLineFR = digitalRead(blackLinePinFR);
   blackLineFL = digitalRead(blackLinePinFL);
   blackLineAnalogTR = analogRead(blackLinePinAnalogTR);
@@ -421,108 +422,119 @@ void InputCapture() {
   powerValue = analogRead(powerValuePin);
 }
 //////////////////////////////////////////////////////
-
+//Coordinate control
+void coordinateControl() {
+  //delay(100);
+  if ((x == 2) and (y==0) and (direc==1)) {
+    //delay(100);
+    //Serial.print("turn Left");
+    turn90L(48);
+    delay(100);
+  }
+  else if ((x == 3) and (y==2) and (direc==2)) {
+    //delay(100);
+    //Serial.print("turn Left");
+    //turn90L(48);
+    //delay(200);
+  }
+  else if ((x == 2) and (y==2) and (direc==3)) {
+    //delay(100);
+    //Serial.print("turn Right");
+    //turn90R(48);
+    //delay(200);
+  }
+  else{
+    if (blackLineTL==1 and blackLineTR==0){
+            //turn90L(1);
+            stopCar();
+            forwardL();
+    }
+    else if (blackLineTL==0 and blackLineTR==1){
+            //turn90R(1);
+            stopCar();
+            forwardR();
+    }
+    else if (blackLineTL==1 and blackLineTR==1){
+            stopCar();
+            move_car_forward(5);
+            //forwardCar();
+    }
+    else if (blackLineTL==0 and blackLineTR==0){
+            if (blackLineTL==0 and blackLineTR==0){
+              stopCar();
+              move_car_forward(2);
+              //forwardCar();
+            }
+            if (blackLineTLL==1){
+              stopCar();
+              //forwardL();
+              turn90R(3);
+            }
+            else if (blackLineTRR==1){
+              stopCar();
+              //forwardR();
+              turn90L(3);
+            }
+      
+    }
+  }
+}
 //////////////////////////////////////////////////////
 //Motor control
 void MotorControl() {
+  //delay(100);
+  if (ColourCh == 1) {
+    //delay(100);
+    Serial.print("green turn");
+    turn90R(56);
+    //delay(200);
+  }
+  else if (ColourCh == 2) {
+    //delay(100);
+    Serial.print("red turn");
+    turn90L(56);
+    //delay(200);
+  }
+  else if (ColourCh == 0) {
+    if (blackLineTL==1 and blackLineTR==0){
+            //turn90L(1);
+            stopCar();
+            forwardL();
+    }
+    else if (blackLineTL==0 and blackLineTR==1){
+            //turn90R(1);
+            stopCar();
+            forwardR();
+    }
+    else if (blackLineTL==1 and blackLineTR==1){
+            stopCar();
+            move_car_forward(5);
+            //forwardCar();
+    }
+    else if (blackLineTL==0 and blackLineTR==0){
+            if (blackLineTL==0 and blackLineTR==0){
+              stopCar();
+              move_car_forward(2);
+              //forwardCar();
+            }
+            if (blackLineTLL==1){
+              stopCar();
+              //forwardL();
+              turn90R(3);
+            }
+            else if (blackLineTRR==1){
+              stopCar();
+              //forwardR();
+              turn90L(3);
+            }
+      
+    }
+  }
 }
-void ForwardDriveCar(){
-    long target=2;
-    long ValueR = encoderValueR;
-    long ValueL = encoderValueL;
-    long rwheel=0;
-    long lwheel=0;
-    //inititate wheels to move
-    digitalWrite(pin1R, 0);
-    digitalWrite(pin2R, 1);
-    digitalWrite(pin1L, 0);
-    digitalWrite(pin2L, 1);
-    //check color in every loop
-    ColorInput();
-    ColorCheck();
-    while(lwheel<target or rwheel<target){
-      if (rwheel>target){
-        digitalWrite(pin2R, 0);
-      }     
-      if (lwheel>target){
-        digitalWrite(pin2L, 0);
-      }
-      rwheel=abs(ValueR-encoderValueR);
-      lwheel=abs(ValueL-encoderValueL);
-      Serial.print("");
-      /***Serial.print(" encoderValueL= ");
-      Serial.print(lwheel);
-      Serial.print(" encoderValueR= ");
-      Serial.print(rwheel);
-      Serial.println("");*/
-    }
-  }
-void LeftRotateCar(){
-    long target=70;
-    long ValueR = encoderValueR;
-    long ValueL = encoderValueL;
-    long rwheel=0;
-    long lwheel=0;
 
-    digitalWrite(pin1R, 1);
-    digitalWrite(pin2R, 0);
-    digitalWrite(pin1L, 0);
-    digitalWrite(pin2L, 1);
-    
-    while(rwheel<target or lwheel<target){
-      //turnCarOnsiteL()
-      if (rwheel>target){
-        digitalWrite(pin1R, 0);
-      }     
-      if (lwheel>target){
-        digitalWrite(pin2L, 0);
-      }
-      rwheel=abs(ValueR-encoderValueR);
-      lwheel=abs(ValueL-encoderValueL);
-      Serial.print("");
-      /***Serial.print(" encoderValueL= ");
-      Serial.print(lwheel);
-      Serial.print(" encoderValueR= ");
-      Serial.print(rwheel);
-      Serial.println("");*/
-    }
-    stopCar();
-  }
- void RightRotateCar(){
-    long target = 70;
-    long ValueR = encoderValueR;
-    long ValueL = encoderValueL;
-    long rwheel=0;
-    long lwheel=0;
 
-    digitalWrite(pin1R, 0);
-    digitalWrite(pin2R, 1);
-    digitalWrite(pin1L, 1);
-    digitalWrite(pin2L, 0);
-    
-    while(rwheel<target or lwheel<target){
-     //turnCarOnsiteR()
-     if (lwheel>target){
-        digitalWrite(pin1L, 0);
-      }     
-      if (rwheel>target){
-        digitalWrite(pin2R, 0);
-      }
-      rwheel=abs(ValueR-encoderValueR);
-      lwheel=abs(ValueL-encoderValueL);
-      Serial.print("");
-      ///Serial.print(" encoderValueL= ");
-      /***Serial.print(lwheel);
-      Serial.print(" encoderValueR= ");
-      Serial.print(rwheel);
-      Serial.println("");
-      //delay(100);*/
-    }
-    stopCar();
-  }
-//////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Interrupt subroutine
 void countL() {
   if (digitalRead(interruptL2)) {
@@ -532,6 +544,8 @@ void countL() {
     encoderValueL++;
   }
 }
+
+
 void countR() {
   if (digitalRead(interruptR2)) {
     encoderValueR++;
@@ -540,17 +554,104 @@ void countR() {
     encoderValueR--;
   }
 }
-//////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////
+
+void crossSection(){
+      if (millis() - timer > 800) {
+      //if (blackLinePinFR==1 or blackLinePinFL==1){ 
+       Serial.println("interrupt entered");
+       timer=millis();
+       if (direc==1){
+          x=x+1;
+          Serial.print("x= ");
+          Serial.println(x);
+          informationdisplay();
+       }
+       if (direc==2){
+          y=y+1;
+          Serial.print("y= ");
+          Serial.println(y);
+          informationdisplay();
+       }
+       if (direc==3){
+          x=x-1;
+          Serial.print("x= ");
+          Serial.println(x);
+          informationdisplay();
+       }
+       if (direc==4){
+          y=y-1;
+          Serial.print("y= ");
+          Serial.println(y);
+          informationdisplay();
+       }
+       stopCar();
+       delay(50);
+       //move_car_forward(10);
+      //}
+    }
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Motor subrountine
-void turnCarOnsiteL() {
+void forwardR() {
+  analogWrite(pin1R, 0);
+  analogWrite(pin2R, 250);
+  analogWrite(pin1L, 0);
+  analogWrite(pin2L, 40);
+}
+void backwardR() {
+  digitalWrite(pin1R, 1);
+  digitalWrite(pin2R, 0);
+}
+void stopR() {
+  digitalWrite(pin1R, 0);
+  digitalWrite(pin2R, 0);
+}
+void forwardL() {
+  analogWrite(pin1L, 0);
+  analogWrite(pin2L, 250);
+  analogWrite(pin1R, 0);
+  analogWrite(pin2R, 40);
+}
+void backwardL() {
+  digitalWrite(pin1L, 1);
+  digitalWrite(pin2L, 0);
+}
+void stopL() {
+  digitalWrite(pin1L, 0);
+  digitalWrite(pin2L, 0);
+}
+void turnCarR() {
+  digitalWrite(pin1R, 0);
+  digitalWrite(pin2R, 0);
+  digitalWrite(pin1L, 0);
+  digitalWrite(pin2L, 1);
+}
+void turnCarL() {
+  digitalWrite(pin1R, 0);
+  digitalWrite(pin2R, 1);
+  digitalWrite(pin1L, 0);
+  digitalWrite(pin2L, 0);
+}
+void turnCarL_Backward() {
+  digitalWrite(pin1R, 1);
+  digitalWrite(pin2R, 0);
+  digitalWrite(pin1L, 0);
+  digitalWrite(pin2L, 0);
+}
+void turnCarR_Backward() {
+  digitalWrite(pin1R, 0);
+  digitalWrite(pin2R, 0);
+  digitalWrite(pin1L, 1);
+  digitalWrite(pin2L, 0);
+}
+void turnCarOnsiteR() {
   digitalWrite(pin1R, 1);
   digitalWrite(pin2R, 0);
   digitalWrite(pin1L, 0);
   digitalWrite(pin2L, 1);
 }
-void turnCarOnsiteR() {
+void turnCarOnsiteL() {
   digitalWrite(pin1R, 0);
   digitalWrite(pin2R, 1);
   digitalWrite(pin1L, 1);
@@ -563,21 +664,189 @@ void forwardCar() {
   digitalWrite(pin2L, 1);
 }
 void backwardCar() {
-  digitalWrite(pin1R, 0);
-  digitalWrite(pin2R, 1);
-  digitalWrite(pin1L, 0);
-  digitalWrite(pin2L, 1);
+  digitalWrite(pin1R, 1);
+  digitalWrite(pin2R, 0);
+  digitalWrite(pin1L, 1);
+  digitalWrite(pin2L, 0);
+}
+void stopForwardCar() {
+  backwardCar();
+  delay(150);
+  stopL();
+  stopR();
+}
+void stopBackwardCar() {
+  forwardCar();
+  delay(100);
+  stopL();
+  stopR();
+}
+void stopTurnCarOnsiteR() {
+  turnCarOnsiteR();
+  delay(100);
+  stopL();
+  stopR();
+}
+void stopTurnCarOnsiteL() {
+  turnCarOnsiteL();
+  delay(100);
+  stopL();
+  stopR();
 }
 void stopCar() {
+  stopL();
+  stopR();
+}
+void forwardRightWheel() {
+ Serial.print(" |fRW| ");
+  digitalWrite(pin1R, 0);
+  digitalWrite(pin2R, 1);
+}
+void forwardLeftWheel() {
+ Serial.print(" |fLW| ");
+ digitalWrite(pin1L, 0);
+  digitalWrite(pin2L, 1);
+}
+void backwardRightWheel() {
+ Serial.print(" |bRW| ");
+  digitalWrite(pin1R, 1);
+  digitalWrite(pin2R, 0);
+}
+void backwardLeftWheel() {
+ Serial.print(" |bLW| ");
+  digitalWrite(pin1L, 1);
+  digitalWrite(pin2L, 0);
+}
+void stopRightWheel() {
+ Serial.print(" |sRW| ");
   digitalWrite(pin1R, 0);
   digitalWrite(pin2R, 0);
+}
+void stopLeftWheel() {
+ Serial.print(" |sLW| ");
   digitalWrite(pin1L, 0);
   digitalWrite(pin2L, 0);
 }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void turn90R(int tval) {
 
-//////////////////////////////////////////////////////
+  //turn right 90 degree
+  Serial.print("turning right");
+  if (rightStart == 0) {
+    stopCar();
+    targetValue = tval;
+    encoderValueL = 0;
+    encoderValueR = 0;
+    rightStart = 1;
+  }
+  while(rightStart!=0){
+  if ((abs(encoderValueL) > targetValue) or (abs(encoderValueR) > targetValue)) {
+    stopCar();
+    ColourCh = 0;
+    rightStart = 0;
+    //move_car_forward(50);
+  }
+  else {
+    if ((abs(encoderValueL)) < (abs(encoderValueR))) {
+      forwardLeftWheel();
+      stopRightWheel();
+    }
+    else if (abs(encoderValueL) > abs(encoderValueR)) {
+      backwardRightWheel();
+      stopLeftWheel();
+    }
+    else {
+      turnCarOnsiteR();
+    }
+  }
+  }
 
-//////////////////////////////////////////////////////
+  if(direc == 1) { direc = 4;}
+  else if(direc == 2) { direc = 1;}
+  else if(direc == 3) { direc = 2;}
+  else if(direc == 4) { direc = 3;}
+  //delay(100);
+  
+}
+
+void move_car_forward(int tval) {
+  //forward 100 click
+  if (forwardStart == 0){
+    stopCar();
+    targetValue = tval;
+    encoderValueL = 0;
+    encoderValueR = 0;
+    forwardStart = 1;
+  }
+  while(forwardStart!=0){
+    Serial.print("Encoder Left:  ");
+    Serial.println(encoderValueL);
+    Serial.print("Encoder Right:  ");
+    Serial.println(encoderValueR);
+  if (encoderValueL > targetValue or encoderValueR > targetValue) {
+    stopCar();
+    forwardStart = 0;
+  }
+  else {
+    if (encoderValueL > encoderValueR) {
+      turnCarL();
+    }
+    else if (encoderValueR > encoderValueL) {
+      turnCarR();
+    }
+    else {
+      forwardCar();
+    }
+  }
+  }
+}
+
+void turn90L(int tval) {
+
+ //turn left 90 degree
+ Serial.print("turning left");
+  if (leftStart == 0){
+ Serial.print("leftStart");
+    stopCar();
+    targetValue = tval;
+    encoderValueL = 0;
+    encoderValueR = 0;
+    leftStart = 1;
+  }
+  while(leftStart!=0){
+  if (abs(encoderValueR) > targetValue or abs(encoderValueL) > targetValue) {
+    Serial.print("stopCar()");
+    stopCar();
+    ColourCh = 0;
+    leftStart = 0;
+    //move_car_forward(50);
+  }
+  else {
+    if (abs(encoderValueR) < abs(encoderValueL)) {
+      Serial.print("abs(encoderValueR) < abs(encoderValueL)");
+      forwardRightWheel();
+      stopLeftWheel();
+    }
+    else if (abs(encoderValueR) > abs(encoderValueL)) {
+      Serial.print("abs(encoderValueR) > abs(encoderValueL)");
+      backwardLeftWheel();
+      stopRightWheel();
+    }
+    else {
+      Serial.print("turnCarOnsiteL()");
+      turnCarOnsiteL();
+    }
+  }
+  }
+
+  if(direc == 1) { direc = 2;}
+  else if(direc == 2) { direc = 3;}
+  else if(direc == 3) { direc = 4;}
+  else if(direc == 4) { direc = 1;}
+  //delay(100);
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //UltraSonic subroutine
 void UltraSonic() {
   if (UltraSonicDone) {
@@ -595,30 +864,18 @@ void UltraSonic() {
     UltraSonicDone = 1;
   }
 }
-////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int colorValueC = 0;
 int colorValueR = 0;
 int colorValueG = 0;
 int colorValueB = 0;
-double CRratio = 0;
-double CGratio = 0;
-double CBratio = 0;
 int colorCnt = 0; //each loop only detect one color value
 int colorCheckCntR = 0; //check several times before detection
 int colorCheckCntG = 0;
 int colorCheckCntB = 0;
-int colorCheckCnt = 4;//testing value
+int colorCheckCnt = 1;//testing value
 
-
-
-
-
-
-/////////////////////////////////////////////////
 void ColorInput() {
   if (colorCnt == 0) {
     //read Clear value
@@ -662,79 +919,44 @@ void ColorInput() {
   Serial.print(colorValueG);
   Serial.print(" ");
 }
+
 void ColorCheck() {
-<<<<<<< Updated upstream
+  Serial.println("Checking color              ////");
   //Check Red Color
-  if ((50 <= colorValueC && colorValueC <= 170) &&
-      (110 <= colorValueR && colorValueR <= 260) &&
-      (250 <= colorValueB && colorValueB <= 420) &&
-      (300 <= colorValueG && colorValueG <= 500)) {
-=======
-  Serial.println("Checking color");
-  CRratio = colorValueR / colorValueC;
-  CBratio = colorValueB / colorValueC;
-  CGratio = colorValueG / colorValueC;
-  
-  //Check Red Color
-  if ((101 < colorValueC && colorValueC < 1207) &&
-      (1.30 < CRratio && CRratio < 11.84) &&
-      (0.44 < CBratio && CBratio < 15.5) &&
-      (0.32 < CGratio && CGratio < 5.99)) {
->>>>>>> Stashed changes
+  if ((170 < colorValueC && colorValueC < 280) &&
+      (200 < colorValueR && colorValueR < 390) &&
+      (450 < colorValueB && colorValueB < 700) &&
+      (550 < colorValueG && colorValueG < 760)) {
     colorCheckCntR++;
   } else {
     colorCheckCntR = 0;
   }
+  
   //Continous detection before notification
   if (colorCheckCntR > colorCheckCnt) {
-    //stop the moving car firstly
-    stopCar();
     Serial.print(" Red is detected. ");
-    Serial.println("\n Turning Left");
-    LeftRotateCar();
+    //RedCheck = 1;
+    ColourCh = 2;
     colorCheckCntR = colorCheckCnt;
-    forwardCar();
-    delay(5000);
   }
+
+  
   //Check Green Color
-<<<<<<< Updated upstream
-  if ((50 <= colorValueC && colorValueC <= 150) &&
-      (110 <= colorValueR && colorValueR <= 320) &&
-      (140 <= colorValueB && colorValueB <= 360) &&
-      (140 <= colorValueG && colorValueG <= 320)) {
-=======
-  if ((58 < colorValueC && colorValueC < 1207) &&
-      (2.05 < CRratio && CRratio < 12.38) &&
-      (0.45 < CBratio && CBratio < 16.45) &&
-      (0.32 < CGratio && CGratio < 4.20)) {
->>>>>>> Stashed changes
+  if ((90 < colorValueC && colorValueC < 400) &&
+      (590 < colorValueR && colorValueR < 971) &&
+      (277 < colorValueB && colorValueB < 1138) &&
+      (480 < colorValueG && colorValueG < 760)) {
     colorCheckCntG++;
   } else {
     colorCheckCntG = 0;
   }
+
+  
   //Continous detection before notification
   if (colorCheckCntG > colorCheckCnt) {
-    //Stop the moving car
-    stopCar();
     Serial.print(" Green is detected. ");
-    Serial.println("\n Turning Right");
-    RightRotateCar();
+    //GreenCheck = 1;
+    ColourCh = 1;
     colorCheckCntG = colorCheckCnt;
-    forwardCar();
-    delay(5000);
-  }
-  //Check Blue Color
-  if ((95 < colorValueC && colorValueC < 110) &&
-      (235 < colorValueR && colorValueR < 270) &&
-      (300 < colorValueB && colorValueB < 330) &&
-      (205 < colorValueG && colorValueG < 230)) {
-    colorCheckCntB++;
-  } else {
-    colorCheckCntB = 0;
-  }
-  //Continous detection before notification
-  if (colorCheckCntB > colorCheckCnt) {
-    Serial.print(" Blue is detected. ");
-    colorCheckCntB = colorCheckCnt;
   }
 }
