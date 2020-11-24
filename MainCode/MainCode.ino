@@ -31,6 +31,12 @@
 #define blackLinePinTR 42         //Top Right
 #define blackLinePinAnalogTL A13   //Top Left
 #define blackLinePinTL 43         //Top Left
+
+//#define blackLinePinAnalogTR A12   //Top Right Right
+#define blackLinePinTRR 40         //Top Right Right
+//#define blackLinePinAnalogTL A13   //Top Left Left
+#define blackLinePinTLL 41         //Top Left Left
+
 #define blackLinePinAnalogFR A14  //Far Right (near the wheel)
 #define blackLinePinFR 20         //Far Right (near the wheel)
 #define blackLinePinAnalogFL A15  //Far Left (near the wheel)
@@ -40,6 +46,8 @@ bool prevBlackLineTR=0;
 bool prevBlackLineTL=0;
 bool blackLineTR = 0; //top right
 bool blackLineTL = 0; // top left
+bool blackLineTRR = 0; //top right right
+bool blackLineTLL = 0; // top left left
 bool blackLineFR = 0; //far right
 bool blackLineFL = 0; //far left
 int  blackLineAnalogTR = 0; //top right
@@ -201,6 +209,8 @@ void setup()
   //Black Line sensor
   pinMode(blackLinePinTR, INPUT);
   pinMode(blackLinePinTL, INPUT);
+  pinMode(blackLinePinTRR, INPUT);
+  pinMode(blackLinePinTLL, INPUT);
   pinMode(blackLinePinFR, INPUT);
   pinMode(blackLinePinFL, INPUT);
   /////////////////////////////////////////
@@ -290,10 +300,13 @@ void loop()
   //move_car_forward();
   //turn90R();
   coordinateControl();
-  //for (int x=0; x<4; x++){
-    //ColorInput();
+  //MotorControl();
+  //for (int x=0; x<2; x++){
+    //for (int x=0; x<4; x++){
+      //ColorInput();
+    //}
+    //ColorCheck();
   //}
-  //ColorCheck();
 }
 
 
@@ -317,6 +330,8 @@ void informationdisplay(void) {
   display.print(", ");
   display.print(y);
   display.println(")");
+  display.print("Direction: ");
+  display.println(direc);
 }
 
 /*void driveCar(){
@@ -386,6 +401,9 @@ void InputCapture() {
   prevBlackLineTL=blackLineTL;
   blackLineTR = digitalRead(blackLinePinTR);
   blackLineTL = digitalRead(blackLinePinTL);
+  blackLineTRR = digitalRead(blackLinePinTRR);
+  blackLineTLL = digitalRead(blackLinePinTLL);
+  
   blackLineFR = digitalRead(blackLinePinFR);
   blackLineFL = digitalRead(blackLinePinFL);
   blackLineAnalogTR = analogRead(blackLinePinAnalogTR);
@@ -423,17 +441,38 @@ void coordinateControl() {
     delay(200);
   }
   else{
-    if (blackLineTL==0 and blackLineTR==1){
-      turn90L(1);
+    if (blackLineTL==1 and blackLineTR==0){
+            //turn90L(1);
+            stopCar();
+            forwardL();
     }
-    else if (blackLineTL==1 and blackLineTR==0){
-      turn90R(1);
+    else if (blackLineTL==0 and blackLineTR==1){
+            //turn90R(1);
+            stopCar();
+            forwardR();
+    }
+    else if (blackLineTL==1 and blackLineTR==1){
+            stopCar();
+            move_car_forward(5);
+            //forwardCar();
     }
     else if (blackLineTL==0 and blackLineTR==0){
-      move_car_forward(2);
-    }
-    else if (blackLineTL==1 and blackLineTR==0){
-      move_car_forward(2);
+            if (blackLineTL==0 and blackLineTR==0){
+              stopCar();
+              move_car_forward(2);
+              //forwardCar();
+            }
+            if (blackLineTLL==1){
+              stopCar();
+              //forwardL();
+              turn90R(3);
+            }
+            else if (blackLineTRR==1){
+              stopCar();
+              //forwardR();
+              turn90L(3);
+            }
+      
     }
   }
 }
@@ -485,6 +524,7 @@ void countR() {
 
 void crossSection(){
       if (millis() - timer > 400) {
+      //if (blackLinePinFR==1 or blackLinePinFL==1){ 
        Serial.println("interrupt entered");
        timer=millis();
        if (direc==1){
@@ -512,13 +552,17 @@ void crossSection(){
           informationdisplay();
        }
        //delay(1000);
+       //move_car_forward(10);
+      //}
     }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Motor subrountine
 void forwardR() {
-  digitalWrite(pin1R, 0);
-  digitalWrite(pin2R, 1);
+  analogWrite(pin1R, 0);
+  analogWrite(pin2R, 250);
+  analogWrite(pin1L, 0);
+  analogWrite(pin2L, 40);
 }
 void backwardR() {
   digitalWrite(pin1R, 1);
@@ -529,8 +573,10 @@ void stopR() {
   digitalWrite(pin2R, 0);
 }
 void forwardL() {
-  digitalWrite(pin1L, 0);
-  digitalWrite(pin2L, 1);
+  analogWrite(pin1L, 0);
+  analogWrite(pin2L, 250);
+  analogWrite(pin1R, 0);
+  analogWrite(pin2R, 40);
 }
 void backwardL() {
   digitalWrite(pin1L, 1);
