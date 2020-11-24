@@ -46,19 +46,21 @@ void setup()
 
 void loop()
 {
-  for (int x=0; x<4; x++){
-    ColorInput();
+  for (int y=0; y<3; y++){
+    for (int x=0; x<4; x++){
+      ColorInput();
+    }
+    ColorCheck();
   }
   //Serial.print(" colorCRBG= ");
-  Serial.print(colorValueC);
+  //Serial.print(colorValueC);
+  //Serial.print(",");
+  Serial.print(CRratio);
   Serial.print(",");
-  Serial.print(colorValueR);
+  Serial.print(CBratio);
   Serial.print(",");
-  Serial.print(colorValueB);
-  Serial.print(",");
-  Serial.print(colorValueG);
+  Serial.print(CGratio);
   //Serial.print("");
-  //ColorCheck();
   Serial.println("");
   delay(200);
 }
@@ -100,7 +102,7 @@ void ColorInput() {
   
 }
 void ColorCheck() {
-  Serial.println("Checking color");
+  //Serial.println("Checking color");
   CRratio = colorValueR / colorValueC;
   CBratio = colorValueB / colorValueC;
   CGratio = colorValueG / colorValueC;
@@ -118,7 +120,7 @@ void ColorCheck() {
   
   //Continous detection before notification
   if (colorCheckCntR > colorCheckCnt) {
-    Serial.print(" Red is detected. ");
+    //Serial.print(" Red is detected. ");
     colorCheckCntR = colorCheckCnt;
   }
   //Check Green Color
@@ -132,7 +134,7 @@ void ColorCheck() {
   }
   //Continous detection before notification
   if (colorCheckCntG > colorCheckCnt) {
-    Serial.print(" Green is detected. ");
+    //Serial.print(" Green is detected. ");
     colorCheckCntG = colorCheckCnt;
   }
   //Check Blue Color
@@ -146,7 +148,7 @@ void ColorCheck() {
   }
   //Continous detection before notification
   if (colorCheckCntB > colorCheckCnt) {
-    Serial.print(" Blue is detected. ");
+    //Serial.print(" Blue is detected. ");
     colorCheckCntB = colorCheckCnt;
   }
 }
