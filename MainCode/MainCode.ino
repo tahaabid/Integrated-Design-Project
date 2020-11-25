@@ -326,15 +326,17 @@ void informationdisplay(void) {
   display.fillScreen(WHITE);
   display.setTextSize(1);
   display.setTextColor(BLACK);
+  display.print("Direction: ");
+  display.println(direc);
   display.setCursor(2, 0);
   display.println("Coordinates: ");
+  display.setTextSize(2);
   display.print("(");
   display.print(x);
   display.print(", ");
   display.print(y);
   display.println(")");
-  display.print("Direction: ");
-  display.println(direc);
+  
 }
 
 
@@ -370,25 +372,137 @@ void InputCapture() {
 //Coordinate control
 void coordinateControl() {
   //delay(100);
-  if ((x == 2) and (y==0) and (direc==1)) {
+  /*if ((x == 2) and (y==0) and (direc==1)) {
     backOnLine=false;
-    turn90L(55, true);
+    //turn90L(55, true);
+    turn90L(30, true);
+    InputCapture();
+    while (!(blackLineTL==1 or blackLineTR==1)){
+      turn90L(3, false);
+      InputCapture();
+    }
     delay(100);
   }
   else if ((x == 2) and (y==4) and (direc==2)) {
     backOnLine=false;
-    turn90R(55, true);
+    //turn90R(55, true);
+    turn90R(30, true);
+    InputCapture();
+    while (!(blackLineTL==1 or blackLineTR==1)){
+      turn90R(3, false);
+      InputCapture();
+    }
     delay(100);
   }
   else if ((x == 4) and (y==4) and (direc==1)) {
     backOnLine=false;
-    turn90R(55, true);
+    //turn90R(55, true);
+    turn90R(30, true);
+    InputCapture();
+    while (!(blackLineTL==1 or blackLineTR==1)){
+      turn90R(3, false);
+      InputCapture();
+    }
     delay(100);
   }
   else if ((x == 4) and (y==1) and (direc==4)) {
     backOnLine=false;
-    turn90R(55, true);
+    //turn90R(55, true);
+    turn90R(30, true);
+    InputCapture();
+    while (!(blackLineTL==1 or blackLineTR==1)){
+      turn90R(3, false);
+      InputCapture();
+    }
     delay(10000);
+  }*/
+  /*if ((x == 1) and (y==0) and (direc==1)) {
+    backOnLine=false;
+    //turn90L(55, true);
+    turn90L(30, true);
+    InputCapture();
+    while (!(blackLineTL==1 or blackLineTR==1)){
+      turn90L(3, false);
+      InputCapture();
+    }
+    delay(100);
+  }
+  else if ((x == 1) and (y==1) and (direc==2)) {
+    backOnLine=false;
+    //turn90L(55, true);
+    turn90L(30, true);
+    InputCapture();
+    while (!(blackLineTL==1 or blackLineTR==1)){
+      turn90L(3, false);
+      InputCapture();
+    }
+    delay(100);
+  }
+  else if ((x == 0) and (y==1) and (direc==3)) {
+    backOnLine=false;
+    //turn90R(55, true);
+    turn90R(30, true);
+    InputCapture();
+    while (!(blackLineTL==1 or blackLineTR==1)){
+      turn90R(3, false);
+      InputCapture();
+    }
+    delay(100);
+  }
+  else if ((x == 0) and (y==4) and (direc==2)) {
+    backOnLine=false;
+    //turn90L(55, true);
+    turn90L(30, true);
+    InputCapture();
+    while (!(blackLineTL==1 or blackLineTR==1)){
+      turn90L(3, false);
+      InputCapture();
+    }
+    delay(10000);
+  }*/
+  if ((x == 3) and (y==0) and (direc==1)) {
+    backOnLine=false;
+    //turn90L(55, true);
+    turn90L(30, true);
+    InputCapture();
+    while (!(blackLineTL==1 or blackLineTR==1)){
+      turn90L(3, false);
+      InputCapture();
+    }
+    delay(100);
+  }
+  else if ((x == 3) and (y==2) and (direc==2)) {
+    backOnLine=false;
+    //turn90R(55, true);
+    turn90R(30, true);
+    InputCapture();
+    while (!(blackLineTL==1 or blackLineTR==1)){
+      turn90R(3, false);
+      InputCapture();
+    }
+    delay(100);
+  }
+  else if ((x == 4) and (y==2) and (direc==1)) {
+    backOnLine=false;
+    //turn90L(55, true);
+    turn90L(30, true);
+    InputCapture();
+    while (!(blackLineTL==1 or blackLineTR==1)){
+      turn90L(3, false);
+      InputCapture();
+    }
+    delay(100);
+  }
+  else if ((x == 4) and (y==3) and (direc==2)) {
+    backOnLine=false;
+    //turn90R(55, true);
+    turn90R(30, true);
+    InputCapture();
+    while (!(blackLineTL==1 or blackLineTR==1)){
+      turn90R(3, false);
+      InputCapture();
+    }
+    delay(100000);
   }
   else{
     if (blackLineTL==1 and blackLineTR==0){
@@ -403,25 +517,25 @@ void coordinateControl() {
     }
     else if (blackLineTL==1 and blackLineTR==1){
             stopCar();
+            move_car_forward(10);
             backOnLine=true;
-            move_car_forward(5);
             //forwardCar();
     }
     else if (blackLineTL==0 and blackLineTR==0){
-            if (blackLineTL==0 and blackLineTR==0){
-              stopCar();
-              move_car_forward(2);
+            if (blackLineTLL==0 and blackLineTRR==0){
+              //stopCar();
+              move_car_forward(3);
               //forwardCar();
             }
-            if (blackLineTLL==1){
-              stopCar();
+            else if (blackLineTLL==1){
+              //stopCar();
               //forwardL();
-              turn90L(3, false);
+              turn90L(5, false);
             }
             else if (blackLineTRR==1){
-              stopCar();
+              //stopCar();
               //forwardR();
-              turn90R(3, false);
+              turn90R(5, false);
             }
       
     }
@@ -468,12 +582,12 @@ void MotorControl() {
             if (blackLineTLL==1){
               stopCar();
               //forwardL();
-              turn90L(3, false);
+              turn90L(7, false);
             }
             else if (blackLineTRR==1){
               stopCar();
               //forwardR();
-              turn90R(3, false);
+              turn90R(7, false);
             }
       
     }
@@ -506,7 +620,7 @@ void countR() {
 
 void crossSection(){
       if (backOnLine){
-      if (millis() - timer > 2000) {
+      if (millis() - timer > 1000) {
       //if (blackLinePinFR==1 or blackLinePinFL==1){ 
        Serial.println("interrupt entered");
        timer=millis();
