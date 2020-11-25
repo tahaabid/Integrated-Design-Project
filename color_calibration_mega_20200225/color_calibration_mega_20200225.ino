@@ -19,7 +19,7 @@ int colorCnt = 0; //each loop only detect one color value
 int colorCheckCntR = 0; //check several times before detection
 int colorCheckCntG = 0;
 int colorCheckCntB = 0;
-int colorCheckCnt = 2;
+int colorCheckCnt = 8;
 
 
 void setup()
@@ -55,13 +55,13 @@ void loop()
   //Serial.print(" colorCRBG= ");
   //Serial.print(colorValueC);
   //Serial.print(",");
-  Serial.print(CRratio);
-  Serial.print(",");
-  Serial.print(CBratio);
-  Serial.print(",");
-  Serial.print(CGratio);
+  //Serial.print(CRratio);
+  //Serial.print(",");
+  //Serial.print(CBratio);
+  //Serial.print(",");
+  //Serial.print(CGratio);
   //Serial.print("");
-  Serial.println("");
+  //Serial.println("");
   delay(200);
 }
 
@@ -108,7 +108,7 @@ void ColorCheck() {
   CGratio = (colorValueG*1.0) / colorValueC;
     
     //Check Red Color
-  if (//(101 < colorValueC && colorValueC < 1207) &&
+  if ((150 < colorValueC && colorValueC < 390) &&
       (0.89 <= CRratio && CRratio <= 1.61) &&
       (1.96 <= CBratio && CBratio <= 3.73) &&
       (2.57 <= CGratio && CGratio <= 4.71)) {
@@ -124,7 +124,7 @@ void ColorCheck() {
     colorCheckCntR = colorCheckCnt;
   }
   //Check Green Color
-  if (//(58 < colorValueC && colorValueC < 1207) &&
+  if ((100 <= colorValueC && colorValueC <= 350) &&
       (1.36 <= CRratio && CRratio <= 2.82) &&
       (2.57 <= CBratio && CBratio <= 3.8) &&
       (1.84 <= CGratio && CGratio <= 4.71)) {
