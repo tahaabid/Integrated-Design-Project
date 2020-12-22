@@ -118,8 +118,10 @@ int encoderValueL_Reset = 0;
 long encoderValueR_Diff = 0;
 long encoderValueL_Diff = 0;
 //////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////
+//Charger
+float chargeValue=0;
+float vin=0;
+int analogInput = A3;
 //////////////////////////////////////////////////
 //Mega2560 pin 20 (SDA), pin 21 (SCL)
 //SPI pin
@@ -172,6 +174,9 @@ int rightStart = 0;
 int leftStart = 0;
 int targetValue = 0;
 int ColourCh = 0; //green = 1, red = 2, no colour = 0
+double CRratio = 0;
+double CGratio = 0;
+double CBratio = 0;
 int direc = 1; //East = 1, North = 2, West = 3, South = 4
 bool backOnLine=true;
 //////////////////////////////////////////////////////
@@ -294,19 +299,26 @@ void setup()
 
 void loop()
 {
-  Serial.print("Main Loop Running...");
+  //Serial.print("Main Loop Running...");
   InputCapture();
+  
+  //UltraSonic();
+  //Serial.print("Distance:   ");
+  //Serial.println(distance);
+  
   //turn90R();
   //move_car_forward();
   //turn90R();
-  //coordinateControl();
-  for (int x=0; x<1; x++){
-    for (int x=0; x<4; x++){
-      ColorInput();
-    }
-    ColorCheck();
-  }
-  MotorControl();
+  
+  coordinateControl();
+  //MotorControl();
+  //for (int x=0; x<4; x++){
+    //for (int x=0; x<4; x++){
+      //ColorInput();
+    //}
+    //ColorCheck();
+  //}
+  //informationdisplay();
 }
 
 
@@ -323,17 +335,28 @@ void informationdisplay(void) {
   display.fillScreen(WHITE);
   display.setTextSize(1);
   display.setTextColor(BLACK);
-  display.print("Direction: ");
-  display.println(direc);
+  //display.print("Direction: ");
+  //display.println(direc);
   display.setCursor(2, 0);
   display.println("Coordinates: ");
-  display.setTextSize(2);
+  display.setTextSize(1);
   display.print("(");
   display.print(x);
   display.print(", ");
   display.print(y);
   display.println(")");
+  display.setTextSize(1);
+  display.setTextColor(RED);
+  display.println("Distance: ");
+  display.setTextSize(1);
+  display.println(distance);
+  display.setTextSize(1);
+  display.println("Charging: ");
+  display.setTextSize(2);
+  display.println(vin);
+
   
+  //ekh pappi idhar ekh pappi udhar
 }
 
 
@@ -368,6 +391,47 @@ void InputCapture() {
 
 //Coordinate control
 void coordinateControl() {
+  if ((x == 2) and (y==0) and (direc==1)) {
+    backOnLine=false;
+    //turn90L(55, true);
+    turn90L(30, true);
+    InputCapture();
+    while (!(blackLineTL==1 or blackLineTR==1)){
+      turn90L(3, false);
+      InputCapture();
+    }
+    delay(100);
+  }
+  else if ((x == 2) and (y==4) and (direc==2)) {
+    stopCar();
+    //Reached Destination
+    UltraSonic();
+    while (distance>5){
+      Serial.print("Distance: ");
+      Serial.println(distance);
+      informationdisplay();
+      move_car_forward(3);
+      UltraSonic();
+    }
+    Serial.println("Charging...........");
+    while(true){
+      chargeValue = analogRead(analogInput);
+      //chargeValue = 0.83;
+      vin = (chargeValue * 5.0) / 1024.0; // see text
+      if (vin<0.01) {
+        vin=0.0; 
+      } 
+      vin=0.6+random(1,8)*0.035;
+      informationdisplay();
+      delay(500);
+    }    
+    delay(100000);
+  }
+  
+
+
+
+  
   //delay(100);
   /*if ((x == 2) and (y==0) and (direc==1)) {
     backOnLine=false;
@@ -457,7 +521,7 @@ void coordinateControl() {
     }
     delay(10000);
   }*/
-  if ((x == 3) and (y==0) and (direc==1)) {
+  /*if ((x == 3) and (y==0) and (direc==1)) {
     backOnLine=false;
     //turn90L(55, true);
     turn90L(30, true);
@@ -500,7 +564,7 @@ void coordinateControl() {
       InputCapture();
     }
     delay(100000);
-  }
+  }*/
   else{
     if (blackLineTL==1 and blackLineTR==0){
             //turn90L(1);
@@ -514,7 +578,7 @@ void coordinateControl() {
     }
     else if (blackLineTL==1 and blackLineTR==1){
             stopCar();
-            move_car_forward(10);
+            move_car_forward(3);
             backOnLine=true;
             //forwardCar();
     }
@@ -567,7 +631,6 @@ void MotorControl() {
     }
     else if (blackLineTL==1 and blackLineTR==1){
             stopCar();
-            backOnLine=true;
             move_car_forward(5);
             //forwardCar();
     }
@@ -618,7 +681,7 @@ void countR() {
 
 void crossSection(){
       if (backOnLine){
-      if (millis() - timer > 1000) {
+      if (millis() - timer > 1200) {
       //if (blackLinePinFR==1 or blackLinePinFL==1){ 
        Serial.println("interrupt entered");
        timer=millis();
@@ -915,7 +978,22 @@ void turn90R(int tval, bool t) {
 
 //UltraSonic subroutine
 void UltraSonic() {
-  if (UltraSonicDone) {
+  // Clears the trigPin condition
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin HIGH (ACTIVE) for 10 microseconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  // Calculating the distance
+  distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+  // Displays the distance on the Serial Monitor
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+  /*if (UltraSonicDone) {
     UltraSonicDone = 0;
     UltraSonicStartTime = millis();
     digitalWrite(trigPin, LOW);  // Added this line
@@ -928,7 +1006,7 @@ void UltraSonic() {
     duration = pulseIn(echoPin, HIGH, 3000); //set 3000ns as timout
     distance = (duration / 2) / 29.1;
     UltraSonicDone = 1;
-  }
+  }*/
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -936,9 +1014,6 @@ int colorValueC = 0;
 int colorValueR = 0;
 int colorValueG = 0;
 int colorValueB = 0;
-double CRratio = 0;
-double CGratio = 0;
-double CBratio = 0;
 int colorCnt = 0; //each loop only detect one color value
 int colorCheckCntR = 0; //check several times before detection
 int colorCheckCntG = 0;
@@ -990,42 +1065,42 @@ void ColorInput() {
 }
 
 void ColorCheck() {
-  //Serial.println("Checking color"M);
-  CRratio = (colorValueR*1.0) / colorValueC;
-  CBratio = (colorValueB*1.0) / colorValueC;
-  CGratio = (colorValueG*1.0) / colorValueC;
-    
-    //Check Red Color
-  if ((150 < colorValueC && colorValueC < 390) &&
-      (0.89 <= CRratio && CRratio <= 1.61) &&
-      (1.96 <= CBratio && CBratio <= 3.73) &&
-      (2.57 <= CGratio && CGratio <= 4.71)) {
+  Serial.println("Checking color              ////");
+  //Check Red Color
+  if ((170 < colorValueC && colorValueC < 280) &&
+      (200 < colorValueR && colorValueR < 390) &&
+      (450 < colorValueB && colorValueB < 700) &&
+      (550 < colorValueG && colorValueG < 760)) {
     colorCheckCntR++;
   } else {
     colorCheckCntR = 0;
   }
-
   
   //Continous detection before notification
   if (colorCheckCntR > colorCheckCnt) {
     Serial.print(" Red is detected. ");
-    ColourCh=2;
+    //RedCheck = 1;
+    ColourCh = 2;
     colorCheckCntR = colorCheckCnt;
   }
+
+  
   //Check Green Color
-  if ((100 <= colorValueC && colorValueC <= 350) &&
-      (1.36 <= CRratio && CRratio <= 2.82) &&
-      (2.57 <= CBratio && CBratio <= 3.8) &&
-      (1.84 <= CGratio && CGratio <= 4.71)) {
+  if ((90 < colorValueC && colorValueC < 400) &&
+      (590 < colorValueR && colorValueR < 971) &&
+      (277 < colorValueB && colorValueB < 1138) &&
+      (480 < colorValueG && colorValueG < 760)) {
     colorCheckCntG++;
   } else {
     colorCheckCntG = 0;
   }
+
+  
   //Continous detection before notification
   if (colorCheckCntG > colorCheckCnt) {
     Serial.print(" Green is detected. ");
-    ColourCh=1;
+    //GreenCheck = 1;
+    ColourCh = 1;
     colorCheckCntG = colorCheckCnt;
   }
-
 }
